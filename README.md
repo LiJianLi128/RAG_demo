@@ -1,6 +1,6 @@
 # 两周浅学 RAG：vibe coding 了一个 demo，请大佬指教
 
-这个仓库是博客 [**《两周浅学 RAG》**](BLOG_两周浅学RAG.md) 的配套代码。
+这个仓库是博客 [**《两周浅学 RAG》**](https://juejin.cn/spost/7634584510009524276) 的配套代码。
 
 不是教程，是"我学完两周后的理解快照"。有哪里讲偏了或者有待提高的，欢迎在博客评论区留言。
 
@@ -41,16 +41,7 @@ pip install -r requirements.txt
 
 > 第一次跑会从 HuggingFace 下载 embedding 模型（约 400MB）+ bge-reranker-base（约 1.1GB），大约 5-10 分钟。
 
-### 2. 配 LLM key
-
-```bash
-cp .env.example .env
-# 编辑 .env，填入 OPENAI_API_KEY 和 OPENAI_BASE_URL
-```
-
-支持任何 OpenAI-compatible 接口（OpenAI / GLM / DeepSeek / 第三方聚合服务都行）。
-
-### 3. 跑 demo
+### 2. 跑 demo
 
 ```bash
 # 完整 RAG demo（检索 + LLM 生成）—— 首次跑会建 Chroma 索引并落盘
@@ -85,7 +76,7 @@ graph LR
     LLM --> A[最终回答]
 ```
 
-完整链路 + 选型理由见博客 [`BLOG_两周浅学RAG.md`](BLOG_两周浅学RAG.md)。
+完整链路 + 选型理由见博客 [《两周浅学 RAG》](https://juejin.cn/spost/7634584510009524276)。
 
 ---
 
