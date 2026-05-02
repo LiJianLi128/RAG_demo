@@ -203,4 +203,31 @@ cos(θ) = (A·B) / (|A| × |B|)
 - [x] 自主调试 chunk_size / overlap / top_k 对检索效果的影响
   - 学生观察：chunk_size 越小，运行时间越长；当前这组测试数据下，检索效果体感差异不大
   - 教学结论：这说明当前数据规模较小、问题较简单时，参数变化主要先影响 chunk 数量和 embedding 计算量，不一定立刻拉开检索质量差距
-- [ ] 下一步：接入 LLM API 完成生成阶段
+- [x] Lesson 6 收尾：理论文档完成（`lessons/lesson6/LESSON6_GENERATION_THEORY.md`）
+- [x] Lesson 6 收尾：生成脚本完成（`lessons/lesson6/lesson6_langchain_generation.py`，3 stage）
+- [x] LLM 选型：GLM（OpenAI-compatible 接口，`glm-4-flash` 免费）
+- [x] 学生跑通 stage 1/2 + `--compare` 多模型对比（2026-05-02）
+  - stage 3 未单独跑（输出与 stage 2 相同，差别在外层工程能力，验证无必要）
+  - 多模型对比体感：kimi-k2.5 最详尽但有"过度发挥"风险，glm-5-turbo 几乎照抄原文，gpt-oss-120b 最稳
+- [x] Lesson 6 收尾的思考题已通过博客形式回答(`BLOG_两周浅学RAG.md`)
+- [x] **项目收尾产出**：博客《两周浅学 RAG：vibe coding 了一个 demo，请大佬指教》(`BLOG_两周浅学RAG.md`，约 4500 字 + 13 张 Mermaid 图)
+- [x] **GitHub 准备 + Chroma 升级**（2026-05-02 下午）
+  - 删除杂项：`QWEN.md` / `claudecodechart/` / `qwenchart/` / 顶层 vector_store 旧 index / 没用过的 data 文件
+  - `.gitignore` 隔离手写版（rag_system.py 等）+ demo + model + 仅本地保留
+  - **lesson6 升级**：in-memory FAISS → Chroma 持久化（落盘到 `vector_store/lesson6_chroma/`）
+  - 加 `--rebuild` flag 支持强制重建索引
+  - requirements.txt 加 `chromadb==0.5.23`
+  - 博客 2.2 节相应改写（从"没做持久化"改成"用 Chroma 做了持久化"）+ 删 22/24 评测段（那是 Demo A 的成绩，跟博客主线 Demo B 不是同一个 demo）
+
+## 学习方向调整（2026-04-30）
+
+学生主动从"做 demo 实践"切换到"补底层基础"，原因：没有真实业务约束、目标不明确。
+后续路径（A+B 混合方案，已商定）：
+
+- 当前：Lesson 6 收尾（接 GLM 生成）
+- 下一步：Lesson 7 BM25 深度（TF-IDF→BM25 数学推导）
+- 然后：Lesson 8 HNSW 深度（工业级向量索引）
+- 然后：Lesson 9 Cross-encoder 深度（vs Bi-encoder）
+- 可选：Lesson 10 评估方法 RAGAS
+
+每个 Lesson 都用学生的 demo 代码作为锚点，避免空学。

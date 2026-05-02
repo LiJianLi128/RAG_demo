@@ -1,141 +1,153 @@
-# RAG 入门项目
+# 两周浅学 RAG：vibe coding 了一个 demo，请大佬指教
 
-一个简单实用的 RAG（Retrieval-Augmented Generation）系统实现，适合学习和实验。
+这个仓库是博客 [**《两周浅学 RAG》**](BLOG_两周浅学RAG.md) 的配套代码。
 
-## 功能特点
+不是教程，是"我学完两周后的理解快照"。有哪里讲偏了或者有待提高的，欢迎在博客评论区留言。
 
-- 基于 FAISS 的本地向量存储
-- 使用 sentence-transformers 进行文本嵌入
-- 支持文档分块和检索
-- 可选接入 OpenAI API 进行答案生成
-- 向量存储持久化
+---
+
+## 仓库内容
+
+```
+RAG/
+├── BLOG_两周浅学RAG.md          # 博客主体（4500 字 + 13 张 Mermaid 图）
+├── lessons/                    # 6 节课的理论 MD + 教学脚本
+│   ├── lesson1/                #   词袋模型 + 余弦相似度
+│   ├── lesson2/                #   词嵌入 / Word2Vec / BERT
+│   ├── lesson3/                #   FAISS 向量检索
+│   ├── lesson4/                #   文档分块策略
+│   ├── lesson5/                #   评估与优化
+│   └── lesson6/                #   LangChain 重写 + LCEL + 多模型对比（博客主线 demo）
+├── data/                       # 公开数据（git 操作规范文档）
+├── config.py                   # 配置（chunk_size / top_k / 模型路径）
+├── requirements.txt
+└── .env.example
+```
+
+每个 Lesson 在 `lessons/lessonN/LESSONN_THEORY.md` 里有理论说明，讲的就是博客对应章节的底层。
+
+---
 
 ## 快速开始
 
-### 1. 安装依赖
+### 1. 装依赖
 
 ```bash
-source venv/Scripts/activate
+python -m venv venv
+source venv/Scripts/activate     # Windows Git Bash
+# 或 source venv/bin/activate    # Linux / macOS
 pip install -r requirements.txt
 ```
 
-### 2. 运行基础示例
+> 第一次跑会从 HuggingFace 下载 embedding 模型（约 400MB）+ bge-reranker-base（约 1.1GB），大约 5-10 分钟。
 
-```bash
-source venv/Scripts/activate
-python examples/example_basic.py
-```
+### 2. 配 LLM key
 
-这个示例会：
-- 添加一些关于 RAG 的示例文档
-- 执行几个查询
-- 展示检索结果
-
-### 3. 使用自己的文档
-
-创建数据目录和示例文件：
-
-```bash
-mkdir data
-echo "你的文档内容" > data/sample.txt
-```
-
-然后运行：
-
-```bash
-source venv/Scripts/activate
-python examples/example_file.py
-```
-
-## 配置 OpenAI（可选）
-
-如果想使用 LLM 生成答案而不只是检索：
-
-1. 复制配置文件：
 ```bash
 cp .env.example .env
+# 编辑 .env，填入 OPENAI_API_KEY 和 OPENAI_BASE_URL
 ```
 
-2. 编辑 `.env` 文件，填入你的 API Key：
-```
-OPENAI_API_KEY=your_api_key_here
-```
+支持任何 OpenAI-compatible 接口（OpenAI / GLM / DeepSeek / 第三方聚合服务都行）。
 
-3. 修改代码中的 `use_openai=True`
+### 3. 跑 demo
 
-## 项目结构
+```bash
+# 完整 RAG demo（检索 + LLM 生成）—— 首次跑会建 Chroma 索引并落盘
+python lessons/lesson6/lesson6_langchain_generation.py --stage 2
 
-```
-.
-├── config.py
-├── document_processor.py
-├── vector_store.py
-├── rag_system.py
-├── examples/
-│   ├── example_basic.py
-│   └── example_file.py
-├── lessons/
-│   ├── lesson1/
-│   │   ├── lesson1_simple_vector.py
-│   │   ├── lesson1_cosine_explained.py
-│   │   └── lesson1_limitations.py
-│   ├── lesson2/
-│   │   ├── LESSON2.md
-│   │   ├── LESSON2_THEORY.md
-│   │   ├── lesson2_embeddings.py
-│   │   ├── lesson2_cross_lingual.py
-│   │   ├── lesson2_distribution_hypothesis.py
-│   │   └── lesson2_sentence_length.py
-│   ├── lesson3/
-│   │   └── LESSON3_THEORY.md
-│   ├── lesson4/
-│   │   └── LESSON4_THEORY.md
-│   ├── lesson5/
-│   │   └── LESSON5_THEORY.md
-│   └── lesson6/
-│       ├── LANGCHAIN_THEORY.md
-│       └── lesson6_langchain_retrieval.py
-├── requirements.txt
-└── README.md
+# 第二次起会从磁盘 load，秒载
+python lessons/lesson6/lesson6_langchain_generation.py --stage 2
+
+# 多模型对比（同一份检索结果依次喂给多个模型，肉眼看差异）
+python lessons/lesson6/lesson6_langchain_generation.py --compare
+
+# 强制重建索引（换了数据 / 改了分块参数后用）
+python lessons/lesson6/lesson6_langchain_generation.py --rebuild
+
+# 换问题
+python lessons/lesson6/lesson6_langchain_generation.py --question "提交前怎么避免误暂存？"
 ```
 
-## 核心概念
+---
 
-### 1. 文档分块（Chunking）
-将长文档切分成小块，便于检索和处理。可在 `config.py` 中调整：
-- `CHUNK_SIZE`: 每块大小
-- `CHUNK_OVERLAP`: 块之间重叠部分
+## demo 架构
 
-### 2. 文本嵌入（Embedding）
-将文本转换为向量表示。使用的模型：
-- `paraphrase-multilingual-MiniLM-L12-v2`（支持中文）
+```mermaid
+graph LR
+    Q[用户问题] --> R1[BM25 召回<br/>jieba 分词]
+    Q --> R2[Chroma 召回<br/>语义向量]
+    R1 --> F[RRF 融合]
+    R2 --> F
+    F --> RR[Cross-encoder Rerank<br/>bge-reranker-base]
+    RR --> P[Prompt 模板<br/>system + user + 上下文]
+    P --> LLM[LLM 生成<br/>OpenAI-compatible]
+    LLM --> A[最终回答]
+```
 
-### 3. 向量检索
-使用 FAISS 进行高效的相似度搜索，找到最相关的文档块。
+完整链路 + 选型理由见博客 [`BLOG_两周浅学RAG.md`](BLOG_两周浅学RAG.md)。
 
-### 4. 答案生成（可选）
-将检索到的文档作为上下文，使用 LLM 生成答案。
+---
 
-## 下一步学习
+## 关键技术选型
 
-1. 尝试不同的分块策略
-2. 实验不同的嵌入模型
-3. 调整检索参数（Top-K）
-4. 学习 `lessons/lesson6/LANGCHAIN_THEORY.md`
-5. 运行 `lessons/lesson6/lesson6_langchain_retrieval.py`
-6. 观察并优化检索效果
-7. 再接入 LLM API 完成生成阶段
+| 组件 | 选型 | 一句话理由 |
+|---|---|---|
+| 分块 | 语义分块（markdown section + 句向量相似度） | 比固定窗口分块更尊重原文结构 |
+| 向量库 | **Chroma**（持久化） | 真正的"向量数据库"接口，不只是 index 文件；pip 一行装好 |
+| Embedding | `paraphrase-multilingual-MiniLM-L12-v2` | 384 维，支持中文 |
+| 召回 | BM25（jieba）+ 向量 双路 | 字面 + 语义互补 |
+| 融合 | RRF（Reciprocal Rank Fusion） | 基于排名而非原始分数，跨检索器更鲁棒 |
+| 重排 | `bge-reranker-base`（Cross-encoder） | 精排比 Bi-encoder 准 |
+| LLM 接口 | OpenAI-compatible | 一份代码切多家厂商 |
+| 工程化 | LangChain LCEL | 免费拿到流式 / 批量 / 异步 / 可观测 |
+
+---
+
+## 配置参数
+
+改 `config.py`：
+
+- `CHUNK_SIZE` / `CHUNK_OVERLAP`：分块策略
+- `TOP_K`：检索返回数
+- `EMBEDDING_MODEL`：embedding 模型名
+- `RERANK_MODEL`：rerank 模型路径（自动用本地 `model/` 下的，没有则从 HuggingFace 拉）
+- `LESSON6_CHROMA_ROOT`：Chroma 持久化根目录（默认 `vector_store/lesson6_chroma/`）
+
+---
+
+## 还想往下挖什么（TODO）
+
+```mermaid
+graph LR
+    A[已会用<br/>能跑通能讲流程] --> B[在做: 知其所以然]
+
+    B --> B1[BM25 数学推导<br/>TF-IDF→BM25 / k1·b 参数]
+    B --> B2[HNSW 图结构<br/>多层小世界图原理]
+    B --> B3[Cross-encoder 训练<br/>query-doc-label triplet]
+    B --> B4[分布式向量库<br/>Qdrant / Milvus 集群]
+```
+
+详见博客第 7 节"还想往下挖什么"。
+
+---
 
 ## 常见问题
 
-**Q: 安装 LangChain 依赖时报版本冲突？**
-A: 当前 LangChain 相关包要求较新的 `numpy` 和 `sentence-transformers`，如果你在旧依赖基础上扩展，需要同步升级这两个包。
+**Q: 第一次跑很慢？**
+A: 下载模型 + 切块 + 计算 embedding。第二次起会从 Chroma 磁盘 load，秒载。
 
-**Q: 首次运行很慢？**
-A: 第一次运行会下载嵌入模型（约 400MB），之后会缓存。
+**Q: 跑出 403 "Your request was blocked"？**
+A: 第三方 OpenAI-compatible 网关会用 WAF 拦截官方 SDK 特征 header。`lesson6_langchain_generation.py:build_llm` 已经写了绕过修法（覆盖 `User-Agent` + 清空 `x-stainless-*`）。
 
-**Q: 不想使用 OpenAI？**
-A: 完全可以！设置 `use_openai=False`，系统会返回检索到的原始文档。
+**Q: 想换自己的数据？**
+A: `--file path/to/your.md`，会自动用文件名 stem 作为 collection name 建独立索引，不会跟原数据串味。
 
-**Q: 如何处理 PDF 文件？**
-A: 可以添加 `PyPDF2` 或 `pdfplumber` 库来解析 PDF。
+**Q: 怎么知道 Chroma 真的持久化了？**
+A: 第一次跑后看 `vector_store/lesson6_chroma/<file_stem>/` 目录，有 `chroma.sqlite3` + `chunks.pkl` 就对了。第二次跑日志里会看到 `[缓存] 从 ... 加载已有索引...`。
+
+---
+
+## License
+
+todo（写本仓库前补）

@@ -1,4 +1,4 @@
-.env
+# Python
 __pycache__/
 *.pyc
 *.pyo
@@ -9,12 +9,34 @@ __pycache__/
 *.egg-info/
 dist/
 build/
-vector_store/
+venv/
+
+# IDE / Editor
 .vscode/
 .idea/
-venv/
 .claude/
+
+# Secrets
+.env
+
+# 向量库持久化目录（Chroma 落盘 + 旧 FAISS index）—— 每次 clone 后首次跑会自动重建
+vector_store/
+
+# 早期手写版 RAG（Demo A 还在依赖，本地保留方便面试助手继续跑）
+/rag_system.py
+/vector_store.py
+/document_processor.py
+/examples/
+
+# 个人 demo（含简历亮点 / 模拟面试记录 / 私人知识库 / 评测结果）—— 严禁上 GitHub
+/demo/
+
+# 本地大模型（1.1GB），首次跑会从 HuggingFace 自动下载到本地缓存
+/model/
+
+# 旧版 session 残留 / 杂项
 claudecodechart/
 qwenchart/
 data/test*.md
-venv
+data/sample.txt
+data/reranker.md
